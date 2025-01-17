@@ -3,11 +3,12 @@
 //  macRogAuraCore
 //
 //  Created by Nick on 6/29/20.
-//  Copyright © 2020 Nick. All rights reserved.
+//  Copyright 2020 Nick. All rights reserved.
 //
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDLib.h>
+#include "state.h"
 
 //  ---------------------------------------
 //  Constant declarations
@@ -15,7 +16,7 @@
 
 #define MESSAGE_LENGTH 17
 #define MAX_NUM_MESSAGES 6
-#define MAX_NUM_COLORS 4
+#define MAX_NUM_COLORS 8
 #define MAX_NUM_SCALARS 4
 #define MAX_FUNCNAME_LEN 32
 
@@ -29,6 +30,8 @@ int verbose = 0;
 //  ---------------------------------------
 //  Data structures
 //  ---------------------------------------
+
+static uint8_t current_brightness = 0x01;  // Will be initialized from state file
 
 typedef struct {
     uint8_t nRed;
@@ -95,7 +98,6 @@ void single_static(Arguments *args, Messages *outputs) {
 }
 
 void single_breathing(Arguments *args, Messages *outputs) {
-    V(printf("single_breathing\n"));
     outputs->nMessages = 1;
     uint8_t *m = outputs->messages[0];
     initMessage(m);
@@ -103,7 +105,7 @@ void single_breathing(Arguments *args, Messages *outputs) {
     m[4] = args->colors[0].nRed;
     m[5] = args->colors[0].nGreen;
     m[6] = args->colors[0].nBlue;
-    m[7] = speedByteValue(args->scalars[0]);
+    m[7] = speedByteValue(3); // default speed
     m[9] = 1;
     m[10] = args->colors[1].nRed;
     m[11] = args->colors[1].nGreen;
@@ -111,57 +113,92 @@ void single_breathing(Arguments *args, Messages *outputs) {
 }
 
 void single_colorcycle(Arguments *args, Messages *outputs) {
-    V(printf("single_colorcycle\n"));
     outputs->nMessages = 1;
     uint8_t *m = outputs->messages[0];
-    initMessage(m);
-    m[3] = 2;
-    m[4] = 0xff;
-    m[7] = speedByteValue(args->scalars[0]);
+    
+    memset(m, 0, MESSAGE_LENGTH);
+    m[0] = 0x5d;
+    m[1] = 0xb3;
+    m[3] = 0x02;  // Color cycle mode
+    m[4] = 0xff;  // Full color range
+    m[7] = speedByteValue(3); // default speed
+    
+    outputs->setAndApply = 1;
 }
 
 void multi_static(Arguments *args, Messages *outputs) {
     V(printf("multi_static\n"));
     outputs->nMessages = 4;
+    
     for (int i = 0; i < 4; ++i) {
         uint8_t *m = outputs->messages[i];
-        initMessage(m);
-        m[2] = i + 1;
+        memset(m, 0, MESSAGE_LENGTH);
+        m[0] = 0x5d;
+        m[1] = 0xb3;
+        m[2] = i + 1;  // Zone number (1-4)
         m[4] = args->colors[i].nRed;
         m[5] = args->colors[i].nGreen;
         m[6] = args->colors[i].nBlue;
-        m[7] = 0xeb;
     }
-}
-
-void multi_breathing(Arguments *args, Messages *outputs) {
-    V(printf("multi_breathing\n"));
     outputs->nMessages = 4;
-    for (int i = 0; i < 4; ++i) {
-        uint8_t *m = outputs->messages[i];
-        initMessage(m);
-        m[2] = i + 1;
-        m[3] = 1;
-        m[4] = args->colors[i].nRed;
-        m[5] = args->colors[i].nGreen;
-        m[6] = args->colors[i].nBlue;
-        m[7] = speedByteValue(args->scalars[0]);
-    }
+    outputs->setAndApply = 1;
 }
 
 void set_brightness(Arguments *args, Messages *outputs) {
-    V(printf("single_static\n"));
+    V(printf("set_brightness\n"));
+    // Set brightness message
     memcpy(outputs->messages[0], MESSAGE_BRIGHTNESS, MESSAGE_LENGTH);
     outputs->messages[0][BRIGHTNESS_OFFSET] = args->scalars[0];
-    outputs->nMessages = 1;
+    
+    // Apply message
+    memcpy(outputs->messages[1], MESSAGE_APPLY, MESSAGE_LENGTH);
+    
+    current_brightness = args->scalars[0];  // Update current brightness
+    save_state(current_brightness);  // Save to state file
+    
+    outputs->nMessages = 2;  // We now have 2 messages - set and apply
     outputs->setAndApply = 0;
 }
 
+void cycle_brightness(Arguments *args, Messages *outputs) {
+    V(printf("cycle_brightness\n"));
+    
+    // Load current state
+    current_brightness = load_state();
+    
+    uint8_t next;
+    if (current_brightness >= 0x04 || current_brightness < 0x01) {
+        next = 0x01;
+    } else {
+        next = current_brightness + 1;
+    }
+    
+    args->scalars[0] = next;
+    set_brightness(args, outputs);
+}
+
 void initialize_keyboard(Arguments *args, Messages *outputs) {
-    V(printf("initialize_keyboard\n"));
-    memcpy(outputs->messages[0], MESSAGE_INITIALIZE_KEYBOARD, MESSAGE_LENGTH);
+    // Load saved brightness state
+    current_brightness = load_state();
+    args->scalars[0] = current_brightness;
+    set_brightness(args, outputs);
+}
+
+void rainbow(Arguments *args, Messages *outputs) {
+    V(printf("rainbow mode\n"));
     outputs->nMessages = 1;
-    outputs->setAndApply = 0;
+    uint8_t *m = outputs->messages[0];
+    
+    // Initialize the message with color cycle parameters
+    initMessage(m);
+    
+    // Set color cycle mode
+    m[3] = 0x02;  // Color cycle mode
+    m[4] = 0xff;  // Full color range
+    m[7] = 0x78;  // Speed (medium)
+    
+    // Ensure set and apply
+    outputs->setAndApply = 1;
 }
 
 // Colors
@@ -220,14 +257,6 @@ void black(Arguments *args, Messages *messages) {
     single_static(args, messages);
 }
 
-void rainbow(Arguments *args, Messages *messages) {
-    memcpy(&(args->colors[0]), RED, 3);
-    memcpy(&(args->colors[1]), YELLOW, 3);
-    memcpy(&(args->colors[2]), CYAN, 3);
-    memcpy(&(args->colors[3]), MAGENTA, 3);
-    multi_static(args, messages);
-}
-
 void on(Arguments *args, Messages *messages) {
     memcpy(args->colors, RED, 3);
     single_static(args, messages);
@@ -248,13 +277,13 @@ void off(Arguments *args, Messages *messages) {
 const FunctionRecord FUNCTION_RECORDS[] = {
     { "initialize_keyboard", &initialize_keyboard, 0, 0 },
     { "brightness", &set_brightness, 0, 1, {BRIGHTNESS} },
-    { "on", &red, 0, 0 },
-    { "off", &black, 0, 0 },
+    { "cycle_brightness", &cycle_brightness, 0, 0 },
+    { "on", &on, 0, 0 },
+    { "off", &off, 0, 0 },
     { "single_static", &single_static, 1, 0 },
-    { "single_breathing", &single_breathing, 2, 1, {SPEED} },
-    { "single_colorcycle", &single_colorcycle, 0, 1, {SPEED} },
+    { "single_breathing", &single_breathing, 2, 0 },
+    { "single_colorcycle", &single_colorcycle, 0, 0 },
     { "multi_static", &multi_static, 4, 0 },
-    { "multi_breathing", &multi_breathing, 4, 1, {SPEED} },
     { "red", &red, 0, 0 },
     { "green", &green, 0, 0 },
     { "blue", &blue, 0, 0 },
@@ -264,12 +293,12 @@ const FunctionRecord FUNCTION_RECORDS[] = {
     { "magenta", &magenta, 0, 0 },
     { "white", &white, 0, 0 },
     { "black", &black, 0, 0 },
-    { "rainbow", &rainbow, 0, 0 },
+    { "rainbow", &rainbow, 0, 0 }
 };
 
-const int NUM_FUNCTION_RECORDS = (int)(sizeof(FUNCTION_RECORDS) / sizeof(FUNCTION_RECORDS[0]));
+const int NUM_FUNCTION_RECORDS = sizeof(FUNCTION_RECORDS) / sizeof(FUNCTION_RECORDS[0]);
 
-void usage() {
+void usage(void) {
     printf("macRogAuraCore - RGB keyboard control for Asus ROG laptops\n");
     printf("(c) 2020 black.dragon74 aka Nick\n\n");
     printf("Usage:\n");

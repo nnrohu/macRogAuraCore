@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		018B58CE24A9ECDC00ECB9C8 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 018B58CD24A9ECDC00ECB9C8 /* main.c */; };
+		F9A7817F2D3A04A100E3B714 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = F9A7817E2D3A04A100E3B714 /* state.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,6 +28,8 @@
 		018B58CA24A9ECDC00ECB9C8 /* macRogAuraCore */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = macRogAuraCore; sourceTree = BUILT_PRODUCTS_DIR; };
 		018B58CD24A9ECDC00ECB9C8 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		01A192F124AB42AB00017729 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		F9A7817D2D3A04A100E3B714 /* state.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = state.h; sourceTree = "<group>"; };
+		F9A7817E2D3A04A100E3B714 /* state.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = state.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +64,8 @@
 		018B58CC24A9ECDC00ECB9C8 /* macRogAuraCore */ = {
 			isa = PBXGroup;
 			children = (
+				F9A7817D2D3A04A100E3B714 /* state.h */,
+				F9A7817E2D3A04A100E3B714 /* state.c */,
 				018B58CD24A9ECDC00ECB9C8 /* main.c */,
 			);
 			path = macRogAuraCore;
@@ -124,6 +129,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				018B58CE24A9ECDC00ECB9C8 /* main.c in Sources */,
+				F9A7817F2D3A04A100E3B714 /* state.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,7 +249,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = LUPK75PW6Q;
+				DEVELOPMENT_TEAM = DR8X86LDJH;
 				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -253,7 +259,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = LUPK75PW6Q;
+				DEVELOPMENT_TEAM = DR8X86LDJH;
 				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
