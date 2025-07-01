@@ -2,7 +2,7 @@
 //  main.c
 //  macRogAuraCore
 //
-//  Created by Nick on 6/29/20.
+//  Updated by Rohit on 01/06/2025.
 //  Copyright 2020 Nick. All rights reserved.
 //
 
@@ -25,11 +25,7 @@
 //  ---------------------------------------
 
 int verbose = 0;
-#define V(x)                                                                   \
-    if (!verbose)                                                              \
-        ;                                                                      \
-    else                                                                       \
-        x
+#define V(x) if(!verbose); else x
 
 //  ---------------------------------------
 //  Data structures
@@ -46,7 +42,7 @@ typedef struct {
 typedef struct {
     Color colors[MAX_NUM_COLORS];
     int scalars[MAX_NUM_SCALARS];
-    int nScalarsProvided; // Add this line
+    int nScalarsProvided;
 } Arguments;
 
 typedef struct {
@@ -69,6 +65,7 @@ typedef struct {
     int nScalars;
     ScalarDef scalars[MAX_NUM_SCALARS];
 } FunctionRecord;
+
 
 //  ---------------------------------------
 //  USB protocol for keyboard
@@ -280,10 +277,8 @@ void off(Arguments *args, Messages *messages) {
 //  Parse the arguments
 //  ---------------------------------------
 
-#define SPEED                                                                  \
-    { "SPEED", "speed", 1, 3 }
-#define BRIGHTNESS                                                             \
-    { "BRIGHTNESS", "brightness", 0, 3 }
+#define SPEED { "SPEED", "speed", 1, 3 }
+#define BRIGHTNESS { "BRIGHTNESS", "brightness", 0, 3 }
 
 const FunctionRecord FUNCTION_RECORDS[] = {
     {"initialize_keyboard", &initialize_keyboard, 0, 0},
@@ -306,6 +301,8 @@ const FunctionRecord FUNCTION_RECORDS[] = {
     {"black", &black, 0, 0},
     {"rainbow", &rainbow, 0, 1, {SPEED}},
 };
+
+
 
 const int NUM_FUNCTION_RECORDS =
     sizeof(FUNCTION_RECORDS) / sizeof(FUNCTION_RECORDS[0]);
