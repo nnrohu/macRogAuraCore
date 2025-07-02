@@ -1,7 +1,5 @@
 # macRogAuraCore - rogauracore ported from Linux.
 
-(c) 2020 black.dragon74 aka Nick
-
 macOS-compatible IOHIDKit implementation similar to the ROG
 Aura Core software.  Supports RGB keyboards with IDs
 [0b05:1854](https://linux-hardware.org/index.php?id=usb:0b05-1854)
@@ -9,8 +7,9 @@ Aura Core software.  Supports RGB keyboards with IDs
 [0b05:1869](https://linux-hardware.org/index.php?id=usb:0b05-1869)
 (GL503, FX503, GL703), [0b05:1866](https://linux-hardware.org/index.php?id=usb:0b05-1866) (GL504, GL703, GX501, GM501), and [0b05:19b6](https://linux-hardware.org/index.php?id=usb:0b05-19b6) (GA503).
 
-# GUI app (depends oon macRogAuraCore)
-[Rog Aura](https://github.com/nnrohu/RogAura)
+# GUI app (depends on macRogAuraCore)
+[Rog Aura GUI](https://github.com/nnrohu/RogAura-GUI)
+![Logo](https://github.com/nnrohu/RogAura-GUI/blob/main/RogAura/Assets.xcassets/AppIcon.appiconset/128-mac.png)
 
 ## Usage
 
