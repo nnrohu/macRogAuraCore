@@ -9,6 +9,9 @@ Aura Core software.  Supports RGB keyboards with IDs
 [0b05:1869](https://linux-hardware.org/index.php?id=usb:0b05-1869)
 (GL503, FX503, GL703), [0b05:1866](https://linux-hardware.org/index.php?id=usb:0b05-1866) (GL504, GL703, GX501, GM501), and [0b05:19b6](https://linux-hardware.org/index.php?id=usb:0b05-19b6) (GA503).
 
+# GUI app (depends oon macRogAuraCore)
+[Rog Aura](https://github.com/nnrohu/RogAura)
+
 ## Usage
 
 ```
